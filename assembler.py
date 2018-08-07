@@ -1,42 +1,42 @@
 import Parser
 import SymbolTable
+import Code
+
+class Assembler:
+    def __init__(self, command, command_type):
+        self.command = command
+        self.command_type = command_type
 
 
-def write(compute, address, file):
-    if compute != '':
-        compute = '111' + compute
-    if compute != '':
-        file.write(compute + '\n')
-    elif address != '':
-        file.write(address + '\n')
-    else:
-        pass
-
-if __name__ == '__main__':
-    print("start\n")
-    asmfile = "Rect.asm"
-    hackfile = asmfile[:-4] + ".hack"
-
-    pre_process = SymbolTable.SymbolTable(asmfile)
-    while (True):
-        if pre_process.process_line():
-            pass
+    def process_type(self, command, com_type, parser):
+        code_translator = Code.Code()
+        if com_type == 'C_COMMAND':
+            destination = parser.dest(command)
+            dest_code = code_translator.dest(destination)
+            compare = parser.comp(command)
+            comp_code = code_translator.comp(compare)
+            jump = parser.jump(command)
+            jump_code = code_translator.jump(jump)
+            address = ''
+        elif com_type == 'A_COMMAND':
+            dest_code = ""
+            comp_code = ""
+            jump_code = ""
+            address = parser.symbol(command)
         else:
-            break
+            dest_code = ""
+            comp_code = ""
+            jump_code = ""
+            address = ''
 
-    table = pre_process.table
-    pre_process.file.close()
+        return dest_code, comp_code, jump_code, address
 
-    hack = open(hackfile, "w+")
-    file = Parser.Code(asmfile, table)
-    more = file.hasMoreCommands()
-    while more != '':
-        com_type = file.commandType(more)
-        compare, destination, jump, address = file.process_type(more, com_type)
-        compute = compare + destination + jump
-        write(compute, address, hack)
-        more = file.hasMoreCommands()
-    hack.seek(0, 0)
-    print(hack.read())
-    hack.close()
-    print("end")
+    def write(self, compute, address, file):
+        if compute != '':
+            compute = '111' + compute
+        if compute != '':
+            file.write(compute + '\n')
+        elif address != '':
+            file.write(address + '\n')
+        else:
+            pass
